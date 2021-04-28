@@ -16,6 +16,9 @@
     </style>
   </head>
   <body>
+    <form id="nickname" action="">
+      <input id="nick" autocomplete="off" /><button>Set Nickname</button>
+    </form>
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
@@ -25,7 +28,9 @@
      var socket = io();
    
      var form = document.getElementById('form');
+     var nicknameForm = document.getElementById('nickname');
      var input = document.getElementById('input');
+     var nick = document.getElementById('nick');
 
     function appendMessage(msg) {
       var item = document.createElement('li');
@@ -39,6 +44,14 @@
          socket.emit('chat message', input.value);
          appendMessage(input.value);
          input.value = '';
+       }
+    });
+
+    nicknameForm.addEventListener('submit', function(e) {
+       e.preventDefault();
+       if (nick.value) {
+         socket.emit('set nickname', nick.value);
+         nick.disabled = true;
        }
     });
 
