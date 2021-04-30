@@ -1,37 +1,89 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Socket.IO chat</title>
-    <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
-      #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
-      #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
-      #input:focus { outline: none; }
-      #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
+<head>
+  <title>Socket.IO chat</title>
+  <style>
+    body {
+      margin: 0;
+      padding-bottom: 3rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
-    </style>
-  </head>
-  <body>
-    <form id="nickname" action="">
-      <input id="nick" autocomplete="off" /><button>Set Nickname</button>
-    </form>
-    <p id="onlineUsers"></p>
-    <ul id="messages"></ul>
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-    <script src="/js/socket.io.js"></script>
-    <script>
-     var socket = io();
-   
-     var form = document.getElementById('form');
-     var nicknameForm = document.getElementById('nickname');
-     var input = document.getElementById('input');
-     var nick = document.getElementById('nick');
+    #form {
+      background: rgba(0, 0, 0, 0.15);
+      padding: 0.25rem;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      height: 3rem;
+      box-sizing: border-box;
+      backdrop-filter: blur(10px);
+    }
+
+    #input {
+      border: none;
+      padding: 0 1rem;
+      flex-grow: 1;
+      border-radius: 2rem;
+      margin: 0.25rem;
+    }
+
+    #input:focus {
+      outline: none;
+    }
+
+    #form>button {
+      background: #333;
+      border: none;
+      padding: 0 1rem;
+      margin: 0.25rem;
+      border-radius: 3px;
+      outline: none;
+      color: #fff;
+    }
+
+    #messages {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    #messages>li {
+      padding: 0.5rem 1rem;
+    }
+
+    #messages>li:nth-child(odd) {
+      background: #efefef;
+    }
+  </style>
+</head>
+
+<body>
+  <form id="nickname" action="">
+    <input id="nick" autocomplete="off" /><button>Set Nickname</button>
+  </form>
+  <p id="onlineUsers"></p>
+  <div>
+    <h5 id="typing">...</h5>
+  </div>
+  <ul id="messages"></ul>
+
+  <form id="form" action="">
+    <input id="input" autocomplete="off" /><button>Send</button>
+  </form>
+  <script src="/js/socket.io.js"></script>
+  <script>
+    var socket = io();
+
+    var form = document.getElementById('form');
+    var nicknameForm = document.getElementById('nickname');
+    var input = document.getElementById('input');
+    var nick = document.getElementById('nick');
+    var typing = document.getElementById('typing');
+
 
     function appendMessage(msg) {
       var item = document.createElement('li');
@@ -39,34 +91,55 @@
       messages.appendChild(item);
     };
 
-    form.addEventListener('submit', function(e) {
-       e.preventDefault();
-       if (input.value) {
-         socket.emit('chat message', input.value);
-         appendMessage(input.value);
-         input.value = '';
-       }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (input.value) {
+        socket.emit('chat message', input.value);
+        appendMessage(input.value);
+        input.value = '';
+      }
     });
 
-    nicknameForm.addEventListener('submit', function(e) {
-       e.preventDefault();
-       if (nick.value) {
-         socket.emit('set nickname', nick.value);
-         nick.disabled = true;
-       }
-    }); 
+    nicknameForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      if (nick.value) {
+        socket.emit('set nickname', nick.value);
+        nick.disabled = true;
+      }
+    });
 
     var onlineUsers = document.getElementById('onlineUsers');
-    socket.on('userlist changed', function(nicks) {
+    socket.on('userlist changed', function (nicks) {
       const currentUsers = JSON.parse(nicks);
-      onlineUsers.textContent = `Online users: ${Object.values(currentUsers)}`;
+      onlineUsers.textContent = `Online users: ${Object.values(currentUsers).join(', ')}`;
     });
 
-    var messages = document.getElementById('messages'); 
-    socket.on('chat message', function(msg) {
+    var messages = document.getElementById('messages');
+    socket.on('chat message', function (msg) {
       appendMessage(msg);
       window.scrollTo(0, document.body.scrollHeight);
-    });  
-   </script>
-  </body>
+    });
+
+    let userIsTyping = false;
+
+    input.addEventListener("keyup", () => {
+      userIsTyping = !!input.value;
+    });
+
+    input.addEventListener('change', () => {
+      socket.emit('typing', { user: socket.id, typing: userIsTyping });
+    });
+
+    socket.on('isTyping', (whoTypes) => {
+      const typingUsers = JSON.parse(whoTypes)
+      delete typingUsers[nick.value];
+      if(Object.keys(typingUsers).length > 0){
+        typing.textContent = `${Object.keys(typingUsers).join(', ')} is typing...`;
+      } else {
+        typing.textContent = '';
+      }
+    });
+  </script>
+</body>
+
 </html>
