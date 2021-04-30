@@ -19,6 +19,7 @@
     <form id="nickname" action="">
       <input id="nick" autocomplete="off" /><button>Set Nickname</button>
     </form>
+    <p id="onlineUsers"></p>
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
@@ -36,7 +37,7 @@
       var item = document.createElement('li');
       item.textContent = msg;
       messages.appendChild(item);
-    };   
+    };
 
     form.addEventListener('submit', function(e) {
        e.preventDefault();
@@ -53,9 +54,15 @@
          socket.emit('set nickname', nick.value);
          nick.disabled = true;
        }
+    }); 
+
+    var onlineUsers = document.getElementById('onlineUsers');
+    socket.on('userlist changed', function(nicks) {
+      const currentUsers = JSON.parse(nicks);
+      onlineUsers.textContent = `Online users: ${Object.values(currentUsers)}`;
     });
 
-    var messages = document.getElementById('messages');
+    var messages = document.getElementById('messages'); 
     socket.on('chat message', function(msg) {
       appendMessage(msg);
       window.scrollTo(0, document.body.scrollHeight);

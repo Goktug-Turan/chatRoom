@@ -17,17 +17,20 @@ server.listen(3000, () => {
 });
 
 const nickNames = {}
+
 io.on('connection', (socket) => {
   io.emit('chat message', 'a user connected')
   socket.on('disconnect', () => {
     io.emit('chat message', 'a user disconnected')
+    delete nickNames[socket.id];
+    io.emit('userlist changed', JSON.stringify(nickNames));
   });
   socket.on('chat message', (msg) => {
     socket.broadcast.emit('chat message', `${nickNames[socket.id]}: ${msg}`);
   });
   socket.on('set nickname', (nick) => {
     nickNames[socket.id] = nick;
+    io.emit('userlist changed', JSON.stringify(nickNames));
+    console.log(nickNames);
   });
 });
-
-// console.log(Object.keys(io));
