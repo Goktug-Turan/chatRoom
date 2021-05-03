@@ -18,9 +18,9 @@ server.listen(3000, () => {
 
 const nickNames = {}
 io.on('connection', (socket) => {
-  io.emit('chat message', 'a user connected')
+  io.emit('connection status', 'a user connected')
   socket.on('disconnect', () => {
-    io.emit('chat message', 'a user disconnected')
+    io.emit('connection status', 'a user disconnected')
   });
   socket.on('chat message', (msg) => {
     socket.broadcast.emit('chat message', `${nickNames[socket.id]}: ${msg}`);

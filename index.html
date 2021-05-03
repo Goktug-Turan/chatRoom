@@ -11,8 +11,8 @@
       #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
 
       #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; }
-      #messages > li:nth-child(odd) { background: #efefef; }
+      #messages > li { padding: 0.5rem 1rem; margin: 0.5rem 1rem 0 1rem; border-radius: 0.4em; }
+      /* #messages > li:nth-child(odd) { background: #efefef; } */
     </style>
   </head>
   <body>
@@ -32,18 +32,28 @@
      var input = document.getElementById('input');
      var nick = document.getElementById('nick');
 
-    function appendMessage(msg) {
+    function appendMessage(msg, sender) {
       var item = document.createElement('li');
       item.textContent = msg;
       messages.appendChild(item);
+      if(sender === 'me') {
+        item.style.textAlign = "right";
+        item.style.background = "#D8FEFF";
+      } if(sender === 'someOneElse') {
+        item.style.background = "#FFFAC4";
+      } if(sender === 'chatRoom') {
+        item.style.textAlign = "center";
+        item.style.background = "#C1C1C1";
+      };
     };   
 
     form.addEventListener('submit', function(e) {
        e.preventDefault();
        if (input.value) {
          socket.emit('chat message', input.value);
-         appendMessage(input.value);
+         appendMessage(input.value, 'me');
          input.value = '';
+         window.scrollTo(0, document.body.scrollHeight);
        }
     });
 
@@ -56,8 +66,14 @@
     });
 
     var messages = document.getElementById('messages');
+
+    socket.on('connection status', function(msg) {
+      appendMessage(msg, 'chatRoom');
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+
     socket.on('chat message', function(msg) {
-      appendMessage(msg);
+      appendMessage(msg, 'someOneElse');
       window.scrollTo(0, document.body.scrollHeight);
     });  
    </script>
