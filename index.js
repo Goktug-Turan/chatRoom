@@ -28,6 +28,13 @@ io.on('connection', (socket) => {
   socket.on('set nickname', (nick) => {
     nickNames[socket.id] = nick;
   });
+  socket.on('typing status', (status) => {
+    if(status) {
+      socket.broadcast.emit('typing status', 'other is typing ....' )
+    } if(!status) {
+      socket.broadcast.emit('typing status', '' )
+    };
+  });
 });
 
 // console.log(Object.keys(io));

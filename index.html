@@ -10,27 +10,29 @@
       #input:focus { outline: none; }
       #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
 
+      #typingStatus { position: fixed; bottom: 3em; left: 2.0em; display: flex; }
+
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages > li { padding: 0.5rem 1rem; margin: 0.5rem 1rem 0 1rem; border-radius: 0.4em; }
-      /* #messages > li:nth-child(odd) { background: #efefef; } */
     </style>
   </head>
   <body>
-    <form id="nickname" action="">
+    <form id="nickname" action="" type="text-area">
       <input id="nick" autocomplete="off" /><button>Set Nickname</button>
     </form>
     <ul id="messages"></ul>
     <form id="form" action="">
       <input id="input" autocomplete="off" /><button>Send</button>
     </form>
+    <p id="typingStatus"></p>
     <script src="/js/socket.io.js"></script>
     <script>
-     var socket = io();
+    var socket = io();
    
-     var form = document.getElementById('form');
-     var nicknameForm = document.getElementById('nickname');
-     var input = document.getElementById('input');
-     var nick = document.getElementById('nick');
+    var form = document.getElementById('form');
+    var nicknameForm = document.getElementById('nickname');
+    var input = document.getElementById('input');
+    var nick = document.getElementById('nick');
 
     function appendMessage(msg, sender) {
       var item = document.createElement('li');
@@ -75,7 +77,22 @@
     socket.on('chat message', function(msg) {
       appendMessage(msg, 'someOneElse');
       window.scrollTo(0, document.body.scrollHeight);
-    });  
+    });
+    
+    var typingStatus = document.getElementById('typingStatus');
+    let userIsTyping = false;
+    input.addEventListener("keyup", () => {
+      userIsTyping = !!input.value;
+      if(userIsTyping) {
+        socket.emit('typing status', true );
+      } if (!userIsTyping) {
+        socket.emit('typing status', false );
+      };
+    });
+
+    socket.on('typing status', function(msg) {
+      typingStatus.textContent = msg;
+    });
    </script>
   </body>
 </html>
