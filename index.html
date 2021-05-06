@@ -3,29 +3,47 @@
   <head>
     <title>Socket.IO chat</title>
     <style>
-      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+      body { margin: 0; padding-bottom: 5rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+      aside {float: left; width:20%; height: auto; }
+      div.onlines {margin-left: 1em; }
+      main {float: left; width:80%; }
 
       #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
       #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
       #input:focus { outline: none; }
       #form > button { background: #333; border: none; padding: 0 1rem; margin: 0.25rem; border-radius: 3px; outline: none; color: #fff; }
 
-      #typingStatus { position: fixed; bottom: 3em; left: 2.0em; display: flex; }
+      div.typingStatusBox {position: fixed; bottom: 3em; width: 100%; height: 2.3em; }
+      p#typingStatus { margin-left: 2em; vertical-align: baseline; line-height: 10px; }
 
       #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages > li { padding: 0.5rem 1rem; margin: 0.5rem 1rem 0 1rem; border-radius: 0.4em; }
+      #messages > li { padding: 0.5rem 1rem; margin: 0.5rem 1rem 0 0; border-radius: 0.4em; }
     </style>
   </head>
   <body>
-    <form id="nickname" action="" type="text-area">
-      <input id="nick" autocomplete="off" /><button>Set Nickname</button>
-    </form>
-    <ul id="messages"></ul>
-    <form id="form" action="">
-      <input id="input" autocomplete="off" /><button>Send</button>
-    </form>
-    <p id="typingStatus"></p>
+    <aside>
+      <div class="onlines">
+        <p>ONLİNE USERS:</p>
+        <p id="onlineUsersTable"></p>
+      </div>
+    </aside>
+    <main>
+        <form id="nickname" action="" type="text-area">
+        <input id="nick" autocomplete="off" /><button>Set Nickname</button>
+        </form>
+
+        <ul id="messages"></ul>
+
+        <form id="form" action="">
+          <input id="input" autocomplete="off" /><button>Send</button>
+        </form>
+
+        <div class="typingStatusBox"><p id="typingStatus"></p></div>
+      </main>
+
     <script src="/js/socket.io.js"></script>
+
     <script>
     var socket = io();
    
@@ -33,6 +51,7 @@
     var nicknameForm = document.getElementById('nickname');
     var input = document.getElementById('input');
     var nick = document.getElementById('nick');
+    var onlineUsersTable = document.getElementById('onlineUsersTable');
 
     function appendMessage(msg, sender) {
       var item = document.createElement('li');
@@ -91,8 +110,31 @@
     });
 
     socket.on('typing status', function(msg) {
+
       typingStatus.textContent = msg;
+
+      // yazan kişi yazamyı bitirince de typewriter çalışmaya devam ediyor???
+
+      // var i = 0;
+      // var speed = 150; 
+      // function typeWriter() {
+      //   if (i < msg.length && msg !== '') {
+      //     typingStatus.textContent += msg.charAt(i);
+      //     i++;
+      //     setTimeout(typeWriter, speed);
+      //   } 
+      //   if ( msg === '' && typingStatus.textContent !== '' ) {
+      //     typingStatus.textContent = '';
+      //   };
+      // };
+      // typeWriter();
+
     });
+
+    socket.on('online users', function(onlineUsers) {
+      onlineUsersTable.textContent = onlineUsers;
+    });
+
    </script>
   </body>
 </html>

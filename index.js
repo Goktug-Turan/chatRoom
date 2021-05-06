@@ -21,12 +21,15 @@ io.on('connection', (socket) => {
   io.emit('connection status', 'a user connected')
   socket.on('disconnect', () => {
     io.emit('connection status', 'a user disconnected')
+    delete nickNames[socket.id];
+    io.emit('online users', Object.values(nickNames)); 
   });
   socket.on('chat message', (msg) => {
     socket.broadcast.emit('chat message', `${nickNames[socket.id]}: ${msg}`);
   });
   socket.on('set nickname', (nick) => {
     nickNames[socket.id] = nick;
+    io.emit('online users', Object.values(nickNames));
   });
   socket.on('typing status', (status) => {
     if(status) {
@@ -38,3 +41,4 @@ io.on('connection', (socket) => {
 });
 
 // console.log(Object.keys(io));
+console.log(nickNames);
