@@ -5,9 +5,11 @@
     <style>
       body { margin: 0; padding-bottom: 5rem; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
 
-      aside {float: left; width:20%; height: auto; }
-      div.onlines {margin-left: 1em; }
-      main {float: left; width:80%; }
+      aside {float: left; width:25%; height: 100vh; }
+      .nickPart { margin-left:0.3em; margin-top: 1em;}
+      div.onlines {height: 50%; width: 25%; position: fixed;}
+      p.online {margin-top: 1em; margin-left: 1em;}
+      main {float: left; width:75%; }
 
       #form { background: rgba(0, 0, 0, 0.15); padding: 0.25rem; position: fixed; bottom: 0; left: 0; right: 0; display: flex; height: 3rem; box-sizing: border-box; backdrop-filter: blur(10px); }
       #input { border: none; padding: 0 1rem; flex-grow: 1; border-radius: 2rem; margin: 0.25rem; }
@@ -23,16 +25,15 @@
   </head>
   <body>
     <aside>
+      <form class="nickPart" id="nickname" action="" type="text-area">
+        <input class="nickPart" id="nick" autocomplete="off" /><button>Set Nickname</button>
+      </form>
       <div class="onlines">
-        <p>ONLİNE USERS:</p>
-        <p id="onlineUsersTable"></p>
+        <p class="online">ONLİNE USERS:</p>
+        <p class="online" id="onlineUsersTable"></p>
       </div>
     </aside>
     <main>
-        <form id="nickname" action="" type="text-area">
-        <input id="nick" autocomplete="off" /><button>Set Nickname</button>
-        </form>
-
         <ul id="messages"></ul>
 
         <form id="form" action="">
@@ -99,41 +100,30 @@
     });
     
     var typingStatus = document.getElementById('typingStatus');
-    let userIsTyping = false;
+    let isUserTyping = false;
     input.addEventListener("keyup", () => {
-      userIsTyping = !!input.value;
-      if(userIsTyping) {
-        socket.emit('typing status', true );
-      } if (!userIsTyping) {
-        socket.emit('typing status', false );
-      };
+      isUserTyping = !!input.value;
+      socket.emit('typing status', isUserTyping );
     });
 
     socket.on('typing status', function(msg) {
 
-      typingStatus.textContent = msg;
+      const s = JSON.parse(msg);
 
-      // yazan kişi yazamyı bitirince de typewriter çalışmaya devam ediyor???
-
-      // var i = 0;
-      // var speed = 150; 
-      // function typeWriter() {
-      //   if (i < msg.length && msg !== '') {
-      //     typingStatus.textContent += msg.charAt(i);
-      //     i++;
-      //     setTimeout(typeWriter, speed);
-      //   } 
-      //   if ( msg === '' && typingStatus.textContent !== '' ) {
-      //     typingStatus.textContent = '';
-      //   };
-      // };
-      // typeWriter();
+      typingStatus.textContent = s.status ? `${s.from} is typing ....` : '';
 
     });
 
     socket.on('online users', function(onlineUsers) {
       onlineUsersTable.textContent = onlineUsers;
     });
+
+    // setInterval(() => {
+    //     fetch('/nickNames')
+    //     .then(response => response.json())
+    //     .then(data => console.log(data));
+    //   },5000)
+    // kullanıcıların socketid lerini fetch ediyor, bunları kullanarak priv messaeg özelliğini yapabilrisin
 
    </script>
   </body>
