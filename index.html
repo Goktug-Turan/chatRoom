@@ -44,10 +44,9 @@
       </main>
 
     <script src="/js/socket.io.js"></script>
-
     <script>
     var socket = io();
-   
+
     var form = document.getElementById('form');
     var nicknameForm = document.getElementById('nickname');
     var input = document.getElementById('input');
@@ -97,21 +96,29 @@
     socket.on('chat message', function(msg) {
       appendMessage(msg, 'someOneElse');
       window.scrollTo(0, document.body.scrollHeight);
-    });
-    
-    var typingStatus = document.getElementById('typingStatus');
+    });   
+
+    function debounce( callback, delay ) {
+      let timeout;
+      return function() {
+          clearTimeout( timeout );
+          timeout = setTimeout( callback, delay );
+      }
+    };
+
     let isUserTyping = false;
-    input.addEventListener("keyup", () => {
+    function typingControl() {
       isUserTyping = !!input.value;
       socket.emit('typing status', isUserTyping );
-    });
+    };
+    
+    input.addEventListener("keyup", debounce(typingControl, 2000));
+   
+    var typingStatus = document.getElementById('typingStatus');
 
     socket.on('typing status', function(msg) {
-
       const s = JSON.parse(msg);
-
       typingStatus.textContent = s.status ? `${s.from} is typing ....` : '';
-
     });
 
     socket.on('online users', function(onlineUsers) {
